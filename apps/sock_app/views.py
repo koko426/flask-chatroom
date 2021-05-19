@@ -25,12 +25,10 @@ def handle_json(msg):
     global file_index
     user = UserModel.query.get(msg.get('send_id'))
 
-    user_id = session.get(config.FRONT_USER_ID)
-    user_se = UserModel.query.get(user_id)
-    print("-------:", user_se.username)
+    # user_id = session.get(config.FRONT_USER_ID)
+    # user_se = UserModel.query.get(user_id)
     if user:
 
-        print("============发送人：", user.username)
         return_msg = {
             'username': user.username,
             'msg': msg['data'],

@@ -23,9 +23,13 @@ logined_userid = []
 def index():
     logined_users = (UserModel.query.get(user_id) for user_id in logined_userid)
     messsages = get_all_messages()
+
+    user_id = session.get(config.FRONT_USER_ID)
+    user_se = UserModel.query.get(user_id)
     context = {
         'logined_users': logined_users,
-        'messsages': messsages
+        'messsages': messsages,
+        'username':user_se.username
     }
     return render_template('index.html', **context)
 

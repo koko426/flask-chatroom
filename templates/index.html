@@ -3,7 +3,7 @@
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-{#    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>#}
+    {#    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>#}
     <meta charset="UTF-8">
     <title>Flask 在线聊天</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -13,6 +13,8 @@
     <script src="{{ url_for("static",filename='js/jquery-3.4.0.min.js') }}"></script>
     <script src="{{ url_for("static",filename='js/sock_io.js') }}"></script>
     <script src="{{ url_for("static",filename='js/my_js/zlajax.js') }}"></script>
+{#    <script src="{{ url_for("static",filename='js/digitalrain.js') }}"></script>#}
+{#    <script src="{{ url_for("static",filename='js/rain.js') }}"></script>#}
     <script type="text/javascript" src="{{ url_for("static",filename='js/my_js/chat.js') }}"></script>
     <script type="text/javascript" src="{{ url_for("static",filename='js/my_js/utils.js') }}"></script>
     <script src="{{ static("js/my_js/login.js") }}"></script>
@@ -26,17 +28,186 @@
 EvPNG.fix('body, div, ul, img, li, input, a, span ,label'); 
 </script>
 <![endif]-->
+
+    <style type="text/css">
+       {# html, body {
+            padding: 0;
+            margin: 0;
+            border: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        html {
+            background: black;
+        }#}
+
+       body {
+				margin: 0;
+				position: relative;
+			}
+
+			.raining {
+				display: block;
+			}
+
+			.backimg {
+				position: absolute;/*定位*/
+				left: 0;
+				top: 0;
+				background: url(../static/img/bgl.jpg);
+				height: 100%;
+				width: 100%;
+				opacity: 0.6;/*给个透明度显示出背景*/
+			}
+
+        .boxes {
+            font-size: 15px;
+            font-family: "Microsoft YaHei", "Roboto", sans-serif;
+            color: #985f0d;
+            font-weight: bold;
+
+        }
+
+        .boxes:focus {
+            outline: none;
+        }
+
+        a:link {
+            text-decoration: none;
+            color: red;
+        }
+
+        /*点击前*/
+        a:visited {
+            text-decoration: none;
+        }
+
+        /*点击后*/
+        a:active {
+            text-decoration: none;
+        }
+
+        /*点击中*/
+        a:hover {
+            text-decoration: none;
+        }
+
+        /*鼠标悬浮*/
+
+    </style>
 </head>
 <body>
-<div class="content">
+<div style="position: absolute;z-index: -9999">
+
+
+    {#canvas 1#}
+    {#<div style="height: 100%; width: 100%; background-image: radial-gradient(at 45px 45px, rgb(0, 255, 255) 0%, rgba(0, 0, 255, 0) 50%, rgb(0, 0, 255) 95%); opacity: 0.18; position: absolute;z-index: -3"></div>
+    <canvas width="1349" height="569" style="width: 1349px; height: 569px; position: absolute;z-index: -2"></canvas>
+    <canvas width="1349" height="569" style="width: 1349px; height: 569px; position: absolute;z-index: -2"></canvas>#}
+
+    <canvas class="raining" width="1349" height="569"></canvas>
+	<div class="backimg"></div>
+
+    <script type="text/javascript">
+		var canvas = document.querySelector(".raining");//获取class为.raning的控件
+		var w, h;
+		~~ function setSize() { //定义canvas的宽高，让他跟浏览器的窗口的宽高相同
+			window.onresize = arguments.callee;
+			w = window.innerWidth;
+			h = window.innerHeight;
+			canvas.width = w;
+			canvas.height = h;
+		}();
+
+		var canCon = canvas.getContext("2d"); //建立2d画板
+		var arain = []; //新建数组,储存雨滴
+		//
+		function random(min, max) { //返回最小值到最大值之间的值
+			return Math.random() * (max - min) + min;
+		}
+
+		function rain() {};
+		rain.prototype = {
+			init: function() { //变量初始化
+				this.x = random(0, w); //在0-w之间生成雨滴
+				this.vx = 0.5;
+				this.y = 0;
+				this.vy = random(5, 10);
+				this.h = random(0.9 * h, h); //地板高度
+				this.r = 1; //雨滴绽放的半径
+				this.vr = 1;
+			},
+			draw: function() {
+				if(this.y < this.h) {
+					canCon.beginPath(); //拿起一支笔
+					canCon.fillStyle = "#CCC"; //笔墨的颜色
+					canCon.fillRect(this.x, this.y, 1, 10); //想象画一个雨滴
+				} else {
+					canCon.beginPath(); //拿起一支笔
+					canCon.strokeStyle = "#CCC"; //笔墨的颜色
+					canCon.arc(this.x, this.y, this.r, 0, Math.PI,1); //想象画一个半圆
+					canCon.stroke(); //下笔作画
+				}
+			},
+			move: function() {
+				if(this.y < this.h) { //位置判断，让雨滴下落
+					this.y += this.vy;
+					this.x += this.vx;
+				} else {
+					if(this.r < 30) { //落下后绽放的大小
+						this.r += this.vr;
+					} else {
+						this.init(); //放完后回归变量原点
+					}
+
+				}
+				this.draw(); //开始作画
+
+			}
+		}
+
+		function createrain(num) {
+			for(var i = 0; i < num; i++) {
+				setTimeout(function() {
+					var raing = new rain(); //创建一滴雨
+					raing.init();
+					raing.draw();
+					arain.push(raing);
+				}, 150 * i) //每隔150ms下落一滴雨
+			}
+		}
+		createrain(40); //雨滴数量
+		setInterval(function() {
+			canCon.fillStyle = "rgba(0,0,0,0.08)"; //拿起一支透明0.13的笔
+			canCon.fillRect(0, 0, w, h); //添加蒙版 控制雨滴长度
+			for(var item of arain) {
+				//item of arain指的是数组里的每一个元素
+				//item in arain指的是数组里的每一个元素的下标（包括圆形连上的可遍历元素）
+				item.move(); //运行整个move事件
+			}
+		}, 500 / 60); //下落时间
+	</script>
+</div>
+
+<div class="content" style="position: absolute;z-index: 2">
     <div class="chatBox">
         <div class="chatLeft">
             <div class="chat01">
                 <div class="chat01_title">
                     <ul class="talkTo">
                         <li><a href="javascript:;">Flask-socketio聊天室</a></li>
+                        {#                        <h3 style="color: #d43f3a;margin-left: 4px">{{ username}}</h3>#}
                     </ul>
-                    <a id="close_btn" class="logoutBtn" data-user-id="{{ g.front_user_id }}">退出</a>
+
+
+                    <a id="close_btn" class="logoutBtn" data-user-id="{{ g.front_user_id }}" style="float:right;"><span
+                            style="color: red;font-weight: bold">退出</span></a>
+
+                    <span style="margin-top: 6px;margin-right:18px;float:right;color: #3c763d;font-size: 16px;font-weight: bold;font-family: 'Microsoft YaHei', 'Roboto', 'sans-serif'">{{ username }}</span>
+                    <input type="hidden" id="current_user" value="{{ username }}"/>
+
                 </div>
                 <div class="chat01_content">
                     {% for messsage in messsages %}
@@ -56,20 +227,22 @@ EvPNG.fix('body, div, ul, img, li, input, a, span ,label');
             <div class="chat02">
                 <div class="chat02_title">
                     <a class="chat02_title_btn ctb01" href="javascript:;"></a>
-                    {#<a class="chat02_title_btn ctb02"#}
-                    {#                            href="javascript:;" title="选择文件">#}
-                    {#                            <embed width="15" height="16" flashvars="swfid=2556975203&amp;maxSumSize=50&amp;maxFileSize=50&amp;maxFileNum=1&amp;multiSelect=0&amp;uploadAPI=http%3A%2F%2Fupload.api.weibo.com%2F2%2Fmss%2Fupload.json%3Fsource%3D209678993%26tuid%3D1887188824&amp;initFun=STK.webim.ui.chatWindow.msgToolBar.upload.initFun&amp;sucFun=STK.webim.ui.chatWindow.msgToolBar.upload.sucFun&amp;errFun=STK.webim.ui.chatWindow.msgToolBar.upload.errFun&amp;beginFun=STK.webim.ui.chatWindow.msgToolBar.upload.beginFun&amp;showTipFun=STK.webim.ui.chatWindow.msgToolBar.upload.showTipFun&amp;hiddenTipFun=STK.webim.ui.chatWindow.msgToolBar.upload.hiddenTipFun&amp;areaInfo=0-16|12-16&amp;fExt=*.jpg;*.gif;*.jpeg;*.png|*&amp;fExtDec=选择图片|选择文件"#}
-                    {#                                data="upload.swf" wmode="transparent" bgcolor="" allowscriptaccess="always" allowfullscreen="true"#}
-                    {#                                scale="noScale" menu="false" type="application/x-shockwave-flash" src="http://service.weibo.com/staticjs/tools/upload.swf?v=36c9997f1313d1c4"#}
-                    {#                                id="swf_3140">#}
-                    {#                        </a><a class="chat02_title_btn ctb03" href="javascript:;" title="选择附件">#}
-                    {#                            <embed width="15" height="16" flashvars="swfid=2556975203&amp;maxSumSize=50&amp;maxFileSize=50&amp;maxFileNum=1&amp;multiSelect=0&amp;uploadAPI=http%3A%2F%2Fupload.api.weibo.com%2F2%2Fmss%2Fupload.json%3Fsource%3D209678993%26tuid%3D1887188824&amp;initFun=STK.webim.ui.chatWindow.msgToolBar.upload.initFun&amp;sucFun=STK.webim.ui.chatWindow.msgToolBar.upload.sucFun&amp;errFun=STK.webim.ui.chatWindow.msgToolBar.upload.errFun&amp;beginFun=STK.webim.ui.chatWindow.msgToolBar.upload.beginFun&amp;showTipFun=STK.webim.ui.chatWindow.msgToolBar.upload.showTipFun&amp;hiddenTipFun=STK.webim.ui.chatWindow.msgToolBar.upload.hiddenTipFun&amp;areaInfo=0-16|12-16&amp;fExt=*.jpg;*.gif;*.jpeg;*.png|*&amp;fExtDec=选择图片|选择文件"#}
-                    {#                                data="upload.swf" wmode="transparent" bgcolor="" allowscriptaccess="always" allowfullscreen="true"#}
-                    {#                                scale="noScale" menu="false" type="application/x-shockwave-flash" src="http://service.weibo.com/staticjs/tools/upload.swf?v=36c9997f1313d1c4"#}
-                    {#                                id="swf_3140">#}
-                    {#                        </a>#}
-                    {#                        <label class="chat02_title_t">#}
-                    {#                            <a href="chat.htm" target="_blank">聊天记录</a></label>#}
+
+                    {#  <a class="chat02_title_btn ctb02"
+                                                href="javascript:;" title="选择文件">
+                                                <embed width="15" height="16" flashvars="swfid=2556975203&amp;maxSumSize=50&amp;maxFileSize=50&amp;maxFileNum=1&amp;multiSelect=0&amp;uploadAPI=http%3A%2F%2Fupload.api.weibo.com%2F2%2Fmss%2Fupload.json%3Fsource%3D209678993%26tuid%3D1887188824&amp;initFun=STK.webim.ui.chatWindow.msgToolBar.upload.initFun&amp;sucFun=STK.webim.ui.chatWindow.msgToolBar.upload.sucFun&amp;errFun=STK.webim.ui.chatWindow.msgToolBar.upload.errFun&amp;beginFun=STK.webim.ui.chatWindow.msgToolBar.upload.beginFun&amp;showTipFun=STK.webim.ui.chatWindow.msgToolBar.upload.showTipFun&amp;hiddenTipFun=STK.webim.ui.chatWindow.msgToolBar.upload.hiddenTipFun&amp;areaInfo=0-16|12-16&amp;fExt=*.jpg;*.gif;*.jpeg;*.png|*&amp;fExtDec=选择图片|选择文件"
+                                                    data="upload.swf" wmode="transparent" bgcolor="" allowscriptaccess="always" allowfullscreen="true"
+                                                    scale="noScale" menu="false" type="application/x-shockwave-flash" src="http://service.weibo.com/staticjs/tools/upload.swf?v=36c9997f1313d1c4"
+                                                    id="swf_3140">
+                                            </a><a class="chat02_title_btn ctb03" href="javascript:;" title="选择附件">
+                                                <embed width="15" height="16" flashvars="swfid=2556975203&amp;maxSumSize=50&amp;maxFileSize=50&amp;maxFileNum=1&amp;multiSelect=0&amp;uploadAPI=http%3A%2F%2Fupload.api.weibo.com%2F2%2Fmss%2Fupload.json%3Fsource%3D209678993%26tuid%3D1887188824&amp;initFun=STK.webim.ui.chatWindow.msgToolBar.upload.initFun&amp;sucFun=STK.webim.ui.chatWindow.msgToolBar.upload.sucFun&amp;errFun=STK.webim.ui.chatWindow.msgToolBar.upload.errFun&amp;beginFun=STK.webim.ui.chatWindow.msgToolBar.upload.beginFun&amp;showTipFun=STK.webim.ui.chatWindow.msgToolBar.upload.showTipFun&amp;hiddenTipFun=STK.webim.ui.chatWindow.msgToolBar.upload.hiddenTipFun&amp;areaInfo=0-16|12-16&amp;fExt=*.jpg;*.gif;*.jpeg;*.png|*&amp;fExtDec=选择图片|选择文件"
+                                                    data="upload.swf" wmode="transparent" bgcolor="" allowscriptaccess="always" allowfullscreen="true"
+                                                    scale="noScale" menu="false" type="application/x-shockwave-flash" src="http://service.weibo.com/staticjs/tools/upload.swf?v=36c9997f1313d1c4"
+                                                    id="swf_3140">
+                                            </a>
+                                            <label class="chat02_title_t">
+                                                <a href="chat.htm" target="_blank">聊天记录</a></label>#}
+
                     <div class="wl_faces_box">
                         <div class="wl_faces_content">
                             <div class="title">
@@ -93,7 +266,7 @@ EvPNG.fix('body, div, ul, img, li, input, a, span ,label');
                     </div>
                 </div>
                 <div class="chat02_content">
-                    <textarea id="textarea"></textarea>
+                    <textarea id="textarea" class="boxes"></textarea>
                 </div>
                 <div class="chat02_bar">
                     <ul>
@@ -119,9 +292,9 @@ EvPNG.fix('body, div, ul, img, li, input, a, span ,label');
                                 </label>
                                 <a href="javascript:;">
                                     <img src="{{ static("img/user_head/") }}{{ user.imgname }}">
-{#                                    <img src="{{ static("img/user_head/") }}">#}
+                                    {#                                    <img src="{{ static("img/user_head/") }}">#}
                                 </a><a href="javascript:;"
-                                                                                          class="chat03_name">{{ user.username }}</a>
+                                       class="chat03_name">{{ user.username }}</a>
                             </li>
                         {% endfor %}
                     </ul>
@@ -138,7 +311,7 @@ EvPNG.fix('body, div, ul, img, li, input, a, span ,label');
         document.onkeydown = function (ev) {
             var e = ev || window.event || arguments.callee.caller.arguments[0]
             if (e && e.keyCode == 13) {
-            Mybtn()
+                Mybtn()
             }
         }
     })

@@ -39,17 +39,30 @@ socket.on('newLogin_return', function (username) {
 
 //消息回复
 socket.on('recive_msg', function (res) {
-    var g = res['msg']
+    var g = res['msg'];
 
+    var send_name = res['username']
+    var web_name = $("#current_user").val();
+
+    console.log(send_name,web_name)
     function h() {
         -1 != g.indexOf("*#emo_") && (g = g.replace("*#", "<img src='static/img/").replace("#*", ".gif'/>"), h())
     }
 
     h();
     var msgBox = $('.chat01_content');
-    msgBox.append("<div class=\"message clearfix\"><div class=\"wrap-text\">" +
-        "<h5 class=\"clearfix\">" + res['username'] + "</h5><div>" + g + "</div></div><div class=\"wrap-ri\">" +
-        "<div clsss=\"clearfix\"><span>" + res['create_time'] + "</span>" +
-        "</div></div><div style=\"clear:both;\"></div></div>");
+    if (send_name == web_name) {
+        msgBox.append("<div class=\"message clearfix\"><div class=\"wrap-text\">" +
+            "<h5 class=\"clearfix\">" + res['username'] + "</h5><div style='color: #761c19;font-weight: bold;font-size: 14px;'>" + g + "</div></div><div class=\"wrap-ri\">" +
+            "<div clsss=\"clearfix\"><span>" + res['create_time'] + "</span>" +
+            "</div></div><div style=\"clear:both;\"></div></div>");
+    } else {
+        msgBox.append("<div class=\"message clearfix\"><div class=\"wrap-text\">" +
+            "<h5 class=\"clearfix\">" + res['username'] + "</h5><div>" + g + "</div></div><div class=\"wrap-ri\">" +
+            "<div clsss=\"clearfix\"><span>" + res['create_time'] + "</span>" +
+            "</div></div><div style=\"clear:both;\"></div></div>");
+    }
+
+
     $(".chat01_content").scrollTop(msgBox[0].scrollHeight + 220)
 });
