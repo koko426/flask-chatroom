@@ -1,20 +1,20 @@
 ﻿{% from '__marcro.html' import static %}
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+{#<html xmlns="http://www.w3.org/1999/xhtml">#}
 <head>
     {#    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>#}
     <meta charset="UTF-8">
     <title>Flask 在线聊天</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="shortcut icon" href="{{ url_for("static",filename='img/emo_7.gif') }}"/>
 
     <link rel="stylesheet" type="text/css" href="{{ url_for("static",filename='css/chat.css') }}"/>
 
     <script src="{{ url_for("static",filename='js/jquery-3.4.0.min.js') }}"></script>
     <script src="{{ url_for("static",filename='js/sock_io.js') }}"></script>
     <script src="{{ url_for("static",filename='js/my_js/zlajax.js') }}"></script>
-{#    <script src="{{ url_for("static",filename='js/digitalrain.js') }}"></script>#}
-{#    <script src="{{ url_for("static",filename='js/rain.js') }}"></script>#}
+    <script src="{{ url_for("static",filename='js/particles.min.js') }}"></script>
+    {#    <script src="{{ url_for("static",filename='js/digitalrain.js') }}"></script>#}
     <script type="text/javascript" src="{{ url_for("static",filename='js/my_js/chat.js') }}"></script>
     <script type="text/javascript" src="{{ url_for("static",filename='js/my_js/utils.js') }}"></script>
     <script src="{{ static("js/my_js/login.js") }}"></script>
@@ -30,37 +30,66 @@ EvPNG.fix('body, div, ul, img, li, input, a, span ,label');
 <![endif]-->
 
     <style type="text/css">
-       {# html, body {
-            padding: 0;
-            margin: 0;
-            border: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
+        .goodman {
+            font-size: 20px;
+            -webkit-mask-image: linear-gradient(to right, red, orange, yellow, green, cyan, blue, purple);
+            background-image: linear-gradient(to right, red, orange, yellow, green, yellow, orange, red, orange, yellow, green, yellow, orange, red);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            -webkit-background-size: 200% 100%;
+            animation: bgp 5s infinite linear;
         }
 
-        html {
-            background: black;
-        }#}
+        @-webkit-keyframes bgp {
+            0% {
+                background-position: 0 0;
+            }
+            100% {
+                background-position: -100% 0;
+            }
+        }
 
-       body {
-				margin: 0;
-				position: relative;
-			}
+        .wg {
+            -moz-transform: rotate(45deg);
+            -webkit-transform: rotate(45deg);
+            transform: rotate(45deg);
+            filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=1);
+            margin: -11px 21px;
+        }
 
-			.raining {
-				display: block;
-			}
+        {#=====================canvas====================#}
+        body {
+            margin: 0;
+            background-color: #fff;
+        }
 
-			.backimg {
-				position: absolute;/*定位*/
-				left: 0;
-				top: 0;
-				background: url(../static/img/bgl.jpg);
-				height: 100%;
-				width: 100%;
-				opacity: 0.6;/*给个透明度显示出背景*/
-			}
+        #particles-js {
+            position: absolute;
+            height: 100%;
+            width: 100%;
+        }
+
+        .text {
+            color: #333;
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            width: 300px;
+            top: calc(50% - 100px);
+            left: calc(50% - 150px);
+            font-size: 4em;
+            font-weight: 400;
+        }
+
+        .img {
+            display: inline-block;
+            height: 100px;
+            z-index: 100;
+        }
+
+        {#=============================canvas end=====================================================#}
 
         .boxes {
             font-size: 15px;
@@ -99,97 +128,123 @@ EvPNG.fix('body, div, ul, img, li, input, a, span ,label');
     </style>
 </head>
 <body>
-<div style="position: absolute;z-index: -9999">
+{#<div style="position: absolute;z-index: -9999">#}
 
 
-    {#canvas 1#}
-    {#<div style="height: 100%; width: 100%; background-image: radial-gradient(at 45px 45px, rgb(0, 255, 255) 0%, rgba(0, 0, 255, 0) 50%, rgb(0, 0, 255) 95%); opacity: 0.18; position: absolute;z-index: -3"></div>
-    <canvas width="1349" height="569" style="width: 1349px; height: 569px; position: absolute;z-index: -2"></canvas>
-    <canvas width="1349" height="569" style="width: 1349px; height: 569px; position: absolute;z-index: -2"></canvas>#}
-
-    <canvas class="raining" width="1349" height="569"></canvas>
-	<div class="backimg"></div>
-
-    <script type="text/javascript">
-		var canvas = document.querySelector(".raining");//获取class为.raning的控件
-		var w, h;
-		~~ function setSize() { //定义canvas的宽高，让他跟浏览器的窗口的宽高相同
-			window.onresize = arguments.callee;
-			w = window.innerWidth;
-			h = window.innerHeight;
-			canvas.width = w;
-			canvas.height = h;
-		}();
-
-		var canCon = canvas.getContext("2d"); //建立2d画板
-		var arain = []; //新建数组,储存雨滴
-		//
-		function random(min, max) { //返回最小值到最大值之间的值
-			return Math.random() * (max - min) + min;
-		}
-
-		function rain() {};
-		rain.prototype = {
-			init: function() { //变量初始化
-				this.x = random(0, w); //在0-w之间生成雨滴
-				this.vx = 0.5;
-				this.y = 0;
-				this.vy = random(5, 10);
-				this.h = random(0.9 * h, h); //地板高度
-				this.r = 1; //雨滴绽放的半径
-				this.vr = 1;
-			},
-			draw: function() {
-				if(this.y < this.h) {
-					canCon.beginPath(); //拿起一支笔
-					canCon.fillStyle = "#CCC"; //笔墨的颜色
-					canCon.fillRect(this.x, this.y, 1, 10); //想象画一个雨滴
-				} else {
-					canCon.beginPath(); //拿起一支笔
-					canCon.strokeStyle = "#CCC"; //笔墨的颜色
-					canCon.arc(this.x, this.y, this.r, 0, Math.PI,1); //想象画一个半圆
-					canCon.stroke(); //下笔作画
-				}
-			},
-			move: function() {
-				if(this.y < this.h) { //位置判断，让雨滴下落
-					this.y += this.vy;
-					this.x += this.vx;
-				} else {
-					if(this.r < 30) { //落下后绽放的大小
-						this.r += this.vr;
-					} else {
-						this.init(); //放完后回归变量原点
-					}
-
-				}
-				this.draw(); //开始作画
-
-			}
-		}
-
-		function createrain(num) {
-			for(var i = 0; i < num; i++) {
-				setTimeout(function() {
-					var raing = new rain(); //创建一滴雨
-					raing.init();
-					raing.draw();
-					arain.push(raing);
-				}, 150 * i) //每隔150ms下落一滴雨
-			}
-		}
-		createrain(40); //雨滴数量
-		setInterval(function() {
-			canCon.fillStyle = "rgba(0,0,0,0.08)"; //拿起一支透明0.13的笔
-			canCon.fillRect(0, 0, w, h); //添加蒙版 控制雨滴长度
-			for(var item of arain) {
-				//item of arain指的是数组里的每一个元素
-				//item in arain指的是数组里的每一个元素的下标（包括圆形连上的可遍历元素）
-				item.move(); //运行整个move事件
-			}
-		}, 500 / 60); //下落时间
-	</script>
+<div id="particles-js" style="position: absolute;z-index: -9999">
+    <canvas class="particles-js-canvas-el" width="1427" height="1297"
+            style="width: 100%; height: 100%;position: absolute;z-index: -9999"></canvas>
 </div>
+
+<script>
+    /* ---- particles.js config ---- */
+    particlesJS("particles-js", {
+        particles: {
+            number: {
+                value: 80,
+                density: {
+                    enable: true,
+                    value_area: 800
+                }
+            },
+            color: {
+                value: ["#2EB67D", "#ECB22E", "#E01E5B", "#36C5F0"]
+            },
+            shape: {
+                type: ["circle"],
+                stroke: {
+                    width: 0,
+                    color: "#fff"
+                },
+                polygon: {
+                    nb_sides: 5
+                }
+            },
+            opacity: {
+                value: 1,
+                random: false,
+                anim: {
+                    enable: false,
+                    speed: 1,
+                    opacity_min: 0.1,
+                    sync: false
+                }
+            },
+            size: {
+                value: 8,
+                random: true,
+                anim: {
+                    enable: false,
+                    speed: 10,
+                    size_min: 10,
+                    sync: false
+                }
+            },
+            line_linked: {
+                enable: true,
+                distance: 150,
+                color: "#808080",
+                opacity: 0.4,
+                width: 1
+            },
+            move: {
+                enable: true,
+                speed: 5,
+                direction: "none",
+                random: false,
+                straight: false,
+                out_mode: "out",
+                bounce: false,
+                attract: {
+                    enable: false,
+                    rotateX: 600,
+                    rotateY: 1200
+                }
+            }
+        },
+        interactivity: {
+            detect_on: "canvas",
+            events: {
+                onhover: {
+                    enable: true,
+                    mode: "grab"
+                },
+                onclick: {
+                    enable: true,
+                    mode: "push"
+                },
+                resize: true
+            },
+            modes: {
+                grab: {
+                    distance: 140,
+                    line_linked: {
+                        opacity: 1
+                    }
+                },
+                bubble: {
+                    distance: 400,
+                    size: 40,
+                    duration: 2,
+                    opacity: 8,
+                    speed: 3
+                },
+                repulse: {
+                    distance: 200,
+                    duration: 0.4
+                },
+                push: {
+                    particles_nb: 4
+                },
+                remove: {
+                    particles_nb: 2
+                }
+            }
+        },
+        retina_detect: true
+    });
+
+</script>
 
 <div class="content" style="position: absolute;z-index: 2">
     <div class="chatBox">
@@ -197,7 +252,7 @@ EvPNG.fix('body, div, ul, img, li, input, a, span ,label');
             <div class="chat01">
                 <div class="chat01_title">
                     <ul class="talkTo">
-                        <li><a href="javascript:;">Flask-socketio聊天室</a></li>
+                        <li><a href="javascript:;">Flask-socketio聊天室</a><span id="gbo" style="color: red"></span></li>
                         {#                        <h3 style="color: #d43f3a;margin-left: 4px">{{ username}}</h3>#}
                     </ul>
 
@@ -213,8 +268,16 @@ EvPNG.fix('body, div, ul, img, li, input, a, span ,label');
                     {% for messsage in messsages %}
                         <div class="message clearfix">
                             <div class="wrap-text">
-                                <h5 class="clearfix">{{ messsage.username }}</h5>
-                                {{ messsage.msg|content|safe }}
+                                {% if messsage.username == username %}
+                                    <img class="wg" src='{{ url_for("static",filename='img/wg.png') }}'
+                                         style='width: 15px;height: 15px' alt='👑'>
+                                    <h5 class="clearfix">{{ messsage.username }}</h5>
+                                    <div class="goodman">{{ messsage.msg|content|safe }}</div>
+                                {% else %}
+                                    <h5 class="clearfix">{{ messsage.username }}</h5>
+                                    <span style="font-size: 16px">{{ messsage.msg|content|safe }}</span>
+                                {% endif %}
+
                             </div>
                             <div class="wrap-ri">
                                 <div clsss="clearfix"><span>{{ messsage.create_time }}</span></div>
@@ -266,7 +329,11 @@ EvPNG.fix('body, div, ul, img, li, input, a, span ,label');
                     </div>
                 </div>
                 <div class="chat02_content">
+
+
                     <textarea id="textarea" class="boxes"></textarea>
+
+
                 </div>
                 <div class="chat02_bar">
                     <ul>

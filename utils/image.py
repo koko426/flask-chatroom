@@ -68,5 +68,7 @@ class CreatImage:
 
 
 if __name__ == '__main__':
+    print(root)
+    print(static_path)
     img = CreatImage()
     img.image('吴', 'test.png')

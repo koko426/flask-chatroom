@@ -16,8 +16,9 @@ index = 0
 
 
 def ack(value):
+    pass
     # 客户端传递
-    print(value)
+    # print(value)
 
 
 @socketio.on('send_message')
@@ -46,9 +47,14 @@ def handle_json(msg):
 @socketio.on('newLogin')
 def newLogin(username):
     user = UserModel.query.filter_by(username=username).first()
+    imgname=user.imgname
+    data={
+        'username':username,
+        'imgname':imgname
+    }
     if user.id not in logined_userid:
         logined_userid.append(user.id)
-        emit('newLogin_return', username, broadcast=True)
+        emit('newLogin_return', data, broadcast=True)
     return 'success'
 
 
@@ -57,6 +63,18 @@ def newLogout(user_id):
     user = UserModel.query.get(user_id)
     emit('newLogout_return', user.username, broadcast=True)
     return 'success'
+
+
+# @socketio.on('disconnect')
+# def disconnect():
+#     emit('disconnect', '服务器已关闭', broadcast=True)
+#     return 'success'
+#
+# @socketio.on('connect')
+# def connect():
+#     emit('connect', '服务器已启动,请刷新', broadcast=True)
+#     return 'success'
+
 
 # # 函数形式
 # import json

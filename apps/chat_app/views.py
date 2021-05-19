@@ -16,20 +16,25 @@ from .decorators import login_required
 bp = Blueprint('chat', __name__)
 
 logined_userid = []
+user_dict = {}
 
 
 @bp.route('/')
 @login_required
 def index():
+    user_id = session.get(config.FRONT_USER_ID)
+    user_se = UserModel.query.get(user_id)
+    if user_id not in logined_userid:
+        # user_dict[user_id] = user_id
+        logined_userid.append(user_id)
+
     logined_users = (UserModel.query.get(user_id) for user_id in logined_userid)
     messsages = get_all_messages()
 
-    user_id = session.get(config.FRONT_USER_ID)
-    user_se = UserModel.query.get(user_id)
     context = {
         'logined_users': logined_users,
         'messsages': messsages,
-        'username':user_se.username
+        'username': user_se.username
     }
     return render_template('index.html', **context)
 
