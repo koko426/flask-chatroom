@@ -8,7 +8,7 @@ FRONT_USER_ID = 'jsaldjflsjd'
 DATA_DIR = os.path.join(os.path.dirname(__file__),'data')
 
 DB_USERNAME = 'root'
-DB_PASSWORD = 'root1234@'
+DB_PASSWORD = 'xxxxx'
 DB_HOST = '127.0.0.1'
 DB_PORT = '3306'
 DB_NAME = 'chatroom'
